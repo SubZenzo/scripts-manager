@@ -1,0 +1,38 @@
+<Window x:Class="ScriptsManager.App.PublishWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}" Width="640" Height="460" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <DockPanel Margin="12">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Опубликовать" IsDefault="True" Click="Ok_Click" MinWidth="110"
+                    ToolTip="git commit выбранных файлов и git push" />
+            <Button Content="Отмена" IsCancel="True" MinWidth="90" Margin="0" />
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+            <TextBlock Text="Что изменилось:" Margin="0,0,0,4" />
+            <TextBox x:Name="MessageBox" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged}" Padding="3,2"
+                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44" MaxHeight="100" VerticalScrollBarVisibility="Auto" />
+        </StackPanel>
+
+        <TextBlock DockPanel.Dock="Top" Text="Изменения (скрипт публикуется вместе с манифестом, пресеты — по выбору; остальные изменения в репозитории не затрагиваются):"
+                   Margin="0,0,0,6" TextWrapping="Wrap" />
+        <ListBox ItemsSource="{Binding Items}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <CheckBox IsChecked="{Binding IsChecked}" Margin="{Binding Margin}"
+                                  Visibility="{Binding IsHeader, Converter={StaticResource VisibleIfNone}}">
+                            <TextBlock>
+                                <Run Text="{Binding Text, Mode=OneWay}" />
+                                <Run Text="{Binding StateText, Mode=OneWay}" Foreground="#888" />
+                            </TextBlock>
+                        </CheckBox>
+                        <TextBlock Text="{Binding Text}" Margin="18,0,0,0"
+                                   Visibility="{Binding IsHeader, Converter={StaticResource VisibleIfAny}}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</Window>

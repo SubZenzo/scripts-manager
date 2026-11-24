@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ScriptsManager.App/ScriptsManager.App.csproj" />
+  <Project Path="ScriptsManager.Core/ScriptsManager.Core.csproj" />
+  <Project Path="ScriptsManager.Tests/ScriptsManager.Tests.csproj" />
+</Solution>

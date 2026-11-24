@@ -1,0 +1,30 @@
+# Артефакты сборки .NET
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+artifacts/
+publish/
+*.dll
+*.exe
+*.pdb
+*.nupkg
+
+# Результаты тестов и покрытия
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Файлы окружения Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# Прочее
+*.log
+Thumbs.db
+.DS_Store

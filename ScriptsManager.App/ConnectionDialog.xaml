@@ -1,0 +1,93 @@
+<Window x:Class="ScriptsManager.App.ConnectionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}" Width="500" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <StackPanel Margin="14">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="Margin" Value="0,0,12,8" />
+                </Style>
+                <Style TargetType="TextBox">
+                    <Setter Property="Padding" Value="3,2" />
+                    <Setter Property="Margin" Value="0,0,0,8" />
+                </Style>
+                <Style TargetType="ComboBox">
+                    <Setter Property="Margin" Value="0,0,0,8" />
+                </Style>
+            </Grid.Resources>
+
+            <TextBlock Text="Сервер:" />
+            <ComboBox x:Name="ServerBox" Grid.Column="1" IsEditable="True" ItemsSource="{Binding Servers}"
+                      Text="{Binding Server, UpdateSourceTrigger=PropertyChanged}" ToolTip="Имя сервера или IP" />
+
+            <TextBlock Grid.Row="1" Text="Порт:" Visibility="{Binding IsPostgres, Converter={StaticResource VisibleIfAny}}" />
+            <TextBox Grid.Row="1" Grid.Column="1" Width="80" HorizontalAlignment="Left"
+                     Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
+                     Visibility="{Binding IsPostgres, Converter={StaticResource VisibleIfAny}}" />
+
+            <TextBlock Grid.Row="2" Text="Вход:" />
+            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding AuthOptions}" SelectedItem="{Binding SelectedAuth}"
+                      DisplayMemberPath="Name" />
+
+            <TextBlock Grid.Row="3" Text="Логин:" Visibility="{Binding NeedsUser, Converter={StaticResource VisibleIfAny}}" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding User, UpdateSourceTrigger=PropertyChanged}"
+                     Visibility="{Binding NeedsUser, Converter={StaticResource VisibleIfAny}}" />
+
+            <TextBlock Grid.Row="4" Text="Пароль:" Visibility="{Binding NeedsPassword, Converter={StaticResource VisibleIfAny}}" />
+            <PasswordBox x:Name="PasswordBox" Grid.Row="4" Grid.Column="1" Padding="3,2" Margin="0,0,0,8"
+                         PasswordChanged="PasswordBox_PasswordChanged"
+                         Visibility="{Binding NeedsPassword, Converter={StaticResource VisibleIfAny}}" />
+
+            <CheckBox Grid.Row="5" Grid.Column="1" Content="Запомнить пароль (Windows Credential Manager)" Margin="0,0,0,10"
+                      IsChecked="{Binding RememberPassword}"
+                      Visibility="{Binding NeedsPassword, Converter={StaticResource VisibleIfAny}}" />
+
+            <TextBlock Grid.Row="6" Text="База данных:" Visibility="{Binding NeedsDatabase, Converter={StaticResource VisibleIfAny}}" />
+            <ComboBox Grid.Row="6" Grid.Column="1" IsEditable="True" ItemsSource="{Binding Databases}"
+                      Text="{Binding Database, UpdateSourceTrigger=PropertyChanged}" DropDownOpened="Databases_DropDownOpened"
+                      Visibility="{Binding NeedsDatabase, Converter={StaticResource VisibleIfAny}}" />
+
+            <TextBlock Grid.Row="7" Grid.ColumnSpan="2" Text="{Binding Status}" TextWrapping="Wrap" Margin="0,4,0,0"
+                       Visibility="{Binding Status, Converter={StaticResource VisibleIfAny}}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="#2E7D32" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsError}" Value="True">
+                                <Setter Property="Foreground" Value="#C62828" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                <Setter Property="Foreground" Value="#666" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+
+        <DockPanel Margin="0,14,0,0">
+            <Button Content="Проверить" Command="{Binding LoadDatabasesCommand}" ToolTip="Подключиться и загрузить список баз" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="OK" IsDefault="True" Click="Ok_Click" MinWidth="80" />
+                <Button Content="Отмена" IsCancel="True" MinWidth="80" Margin="0" />
+            </StackPanel>
+        </DockPanel>
+    </StackPanel>
+</Window>

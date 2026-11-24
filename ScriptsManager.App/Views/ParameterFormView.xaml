@@ -1,0 +1,250 @@
+<UserControl x:Class="ScriptsManager.App.Views.ParameterFormView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:infra="clr-namespace:ScriptsManager.App.Infrastructure">
+    <UserControl.Resources>
+        <Style x:Key="FieldBox" TargetType="TextBox">
+            <Setter Property="Padding" Value="3,2" />
+        </Style>
+        <Style x:Key="Placeholder" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#AAA" />
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+
+        <DataTemplate x:Key="TextTemplate">
+            <Grid>
+                <TextBox x:Name="Box" Style="{StaticResource FieldBox}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Style="{StaticResource Placeholder}" Text="{Binding Placeholder}"
+                           Visibility="{Binding Text, ElementName=Box, Converter={StaticResource VisibleIfNone}}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="MultilineTemplate">
+            <TextBox Style="{StaticResource FieldBox}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" FontFamily="Consolas"
+                     MinHeight="70" MaxHeight="220" VerticalScrollBarVisibility="Auto" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="BoolTemplate">
+            <CheckBox IsChecked="{Binding Checked}" IsThreeState="{Binding IsThreeState, Mode=OneTime}" Margin="0,3" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="DateTemplate">
+            <DockPanel>
+                <ToggleButton x:Name="CalendarButton" DockPanel.Dock="Right" Margin="4,0,0,0" Padding="6,0"
+                              IsChecked="{Binding IsCalendarOpen}" ToolTip="Календарь"
+                              IsHitTestVisible="{Binding IsOpen, ElementName=CalendarPopup, Converter={StaticResource Not}}">
+                    <TextBlock Text="&#xE787;" Style="{StaticResource IconText}" />
+                </ToggleButton>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Hint}" Foreground="#666" Margin="8,0,4,0" VerticalAlignment="Center"
+                           Visibility="{Binding Hint, Converter={StaticResource VisibleIfAny}}" />
+                <Grid>
+                    <TextBox x:Name="Box" Style="{StaticResource FieldBox}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Style="{StaticResource Placeholder}" Text="{Binding Placeholder}"
+                               Visibility="{Binding Text, ElementName=Box, Converter={StaticResource VisibleIfNone}}" />
+                    <Popup x:Name="CalendarPopup" IsOpen="{Binding IsCalendarOpen}" StaysOpen="False"
+                           PlacementTarget="{Binding ElementName=Box}" Placement="Bottom" Closed="CalendarPopup_Closed">
+                        <!-- Calendar берёт культуру из Language, только если оно задано на нём самом, иначе — культуру системы -->
+                        <Calendar Language="ru-RU" SelectedDate="{Binding CalendarDate}" PreviewMouseUp="Calendar_PreviewMouseUp"
+                                  Loaded="Calendar_Loaded" />
+                    </Popup>
+                </Grid>
+            </DockPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SingleListTemplate">
+            <ComboBox ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" DisplayMemberPath="Value" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="EditableListTemplate">
+            <ComboBox ItemsSource="{Binding Items}" DisplayMemberPath="Value" TextSearch.TextPath="Value" IsEditable="True"
+                      Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" />
+        </DataTemplate>
+
+        <!-- Как выпадающий список: в поле — выбранные значения, флажки — в панели (с поиском, если элементов много). -->
+        <DataTemplate x:Key="MultiListTemplate">
+            <Grid>
+                <ToggleButton x:Name="DropButton" IsChecked="{Binding IsDropDownOpen}" HorizontalContentAlignment="Stretch" Padding="5,2"
+                              ToolTip="{Binding Summary}"
+                              IsHitTestVisible="{Binding IsOpen, ElementName=DropPopup, Converter={StaticResource Not}}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Text="&#xE70D;" Style="{StaticResource IconText}" FontSize="10" Margin="6,0,0,0" />
+                        <Grid>
+                            <TextBlock Text="{Binding Summary}" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="не выбрано" Foreground="#AAA"
+                                       Visibility="{Binding Summary, Converter={StaticResource VisibleIfNone}}" />
+                        </Grid>
+                    </DockPanel>
+                </ToggleButton>
+                <Popup x:Name="DropPopup" IsOpen="{Binding IsDropDownOpen}" StaysOpen="False" PlacementTarget="{Binding ElementName=DropButton}"
+                       Placement="Bottom" Opened="DropPopup_Opened"
+                       MinWidth="{Binding ActualWidth, ElementName=DropButton}">
+                    <Border Background="{x:Static SystemColors.WindowBrush}" BorderBrush="#AAA" BorderThickness="1" Padding="6">
+                        <DockPanel>
+                            <Grid DockPanel.Dock="Top" Margin="0,0,0,6"
+                                  Visibility="{Binding ShowItemFilter, Converter={StaticResource VisibleIfAny}}">
+                                <TextBox x:Name="FilterBox" Style="{StaticResource FieldBox}"
+                                         Text="{Binding ItemFilter, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Style="{StaticResource Placeholder}" Text="поиск"
+                                           Visibility="{Binding Text, ElementName=FilterBox, Converter={StaticResource VisibleIfNone}}" />
+                            </Grid>
+                            <TextBlock DockPanel.Dock="Bottom" Margin="0,6,0,0" FontSize="11">
+                                <Hyperlink Command="{Binding CheckAllCommand}" CommandParameter="true">все</Hyperlink>
+                                <Run Text=" · " Foreground="#999" />
+                                <Hyperlink Command="{Binding CheckAllCommand}" CommandParameter="false">ничего</Hyperlink>
+                            </TextBlock>
+                            <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding FilteredItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Content="{Binding Value}" IsChecked="{Binding IsChecked}" Margin="0,2,12,2" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </DockPanel>
+                    </Border>
+                </Popup>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="RangeTemplate">
+            <StackPanel>
+                <Grid>
+                    <TextBox x:Name="Box" Style="{StaticResource FieldBox}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                             AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas"
+                             MinHeight="40" MaxHeight="160" VerticalScrollBarVisibility="Auto" />
+                    <TextBlock Style="{StaticResource Placeholder}" VerticalAlignment="Top" Margin="6,3,0,0"
+                               Text="1, 5, 2..4, 6..10 — через запятую или с новой строки"
+                               Visibility="{Binding Text, ElementName=Box, Converter={StaticResource VisibleIfNone}}" />
+                </Grid>
+                <TextBlock Text="{Binding Hint}" Foreground="#666" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"
+                           Visibility="{Binding Hint, Converter={StaticResource VisibleIfAny}}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="PathTemplate">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="…" Command="{Binding BrowseCommand}" Margin="4,0,0,0" Padding="8,0" />
+                <TextBox Style="{StaticResource FieldBox}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" />
+            </DockPanel>
+        </DataTemplate>
+
+        <infra:FieldTemplateSelector x:Key="FieldSelector"
+                                     Text="{StaticResource TextTemplate}"
+                                     MultilineText="{StaticResource MultilineTemplate}"
+                                     Bool="{StaticResource BoolTemplate}"
+                                     Date="{StaticResource DateTemplate}"
+                                     SingleList="{StaticResource SingleListTemplate}"
+                                     EditableList="{StaticResource EditableListTemplate}"
+                                     MultiList="{StaticResource MultiListTemplate}"
+                                     Range="{StaticResource RangeTemplate}"
+                                     Path="{StaticResource PathTemplate}" />
+    </UserControl.Resources>
+
+    <StackPanel Grid.IsSharedSizeScope="True">
+        <DockPanel Margin="0,0,0,14">
+            <TextBlock Text="Пресет:" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <Grid Width="240" Margin="0,0,8,0">
+                <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" DisplayMemberPath="Display" />
+                <TextBlock Text="{Binding PresetsHint}" Foreground="#999" Margin="7,0,0,0" VerticalAlignment="Center"
+                           IsHitTestVisible="False"
+                           Visibility="{Binding SelectedPreset, Converter={StaticResource VisibleIfNone}}" />
+            </Grid>
+            <Button Content="Сохранить как…" Command="{Binding SavePresetCommand}" />
+            <Button Content="Удалить" Command="{Binding DeletePresetCommand}" />
+            <Button Content="Сбросить" Command="{Binding ResetToDefaultsCommand}" ToolTip="Значения по умолчанию из манифеста" />
+            <Border />
+        </DockPanel>
+
+        <ItemsControl ItemsSource="{Binding Connections}" Focusable="False" Margin="0,0,0,6"
+                      Visibility="{Binding HasConnections, Converter={StaticResource VisibleIfAny}}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" MaxWidth="640" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Top" Margin="0,3,14,0">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding TypeName}" Foreground="#777" FontSize="11" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3*" />
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <ComboBox ItemsSource="{Binding Options}" SelectedItem="{Binding Selected}" DisplayMemberPath="Display" />
+                                    <TextBlock Text="выберите или нажмите «…»" Foreground="#AAA" Margin="7,0,0,0" VerticalAlignment="Center"
+                                               IsHitTestVisible="False"
+                                               Visibility="{Binding Selected, Converter={StaticResource VisibleIfNone}}" />
+                                </Grid>
+                                <Grid Grid.Column="1" Margin="6,0,0,0"
+                                      Visibility="{Binding NeedsDatabase, Converter={StaticResource VisibleIfAny}}">
+                                    <ComboBox x:Name="DbBox" IsEditable="True" ItemsSource="{Binding Databases}"
+                                              Text="{Binding Database, UpdateSourceTrigger=PropertyChanged}"
+                                              DropDownOpened="Databases_DropDownOpened" />
+                                    <TextBlock Text="база данных" Foreground="#AAA" Margin="7,0,0,0" VerticalAlignment="Center"
+                                               IsHitTestVisible="False"
+                                               Visibility="{Binding Text, ElementName=DbBox, Converter={StaticResource VisibleIfNone}}" />
+                                </Grid>
+                                <Button Content="…" Command="{Binding EditCommand}" Margin="6,0,0,0" Padding="8,0"
+                                        ToolTip="Сервер, способ входа, пароль">
+                                    <!-- Без выбора базы «…» встаёт на её место, сразу за сервером. -->
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                            <Setter Property="Grid.Column" Value="2" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding NeedsDatabase}" Value="False">
+                                                    <Setter Property="Grid.Column" Value="1" />
+                                                    <Setter Property="HorizontalAlignment" Value="Left" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </Grid>
+                            <TextBlock Text="{Binding Error}" Foreground="#C62828" TextWrapping="Wrap" Margin="0,2,0,0"
+                                       Visibility="{Binding Error, Converter={StaticResource VisibleIfAny}}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock Text="У скрипта нет параметров" Foreground="#888" Margin="0,0,0,8"
+                   Visibility="{Binding HasFields, Converter={StaticResource VisibleIfNone}}" />
+
+        <ItemsControl ItemsSource="{Binding Fields}" Focusable="False">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" MaxWidth="640" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0,4,14,0" ToolTip="{Binding Name}">
+                            <TextBlock Text="{Binding Label}" />
+                            <TextBlock Text=" *" Foreground="#C62828"
+                                       Visibility="{Binding Required, Converter={StaticResource VisibleIfAny}}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <ContentControl Content="{Binding}" ContentTemplateSelector="{StaticResource FieldSelector}" Focusable="False" />
+                            <TextBlock Text="{Binding Error}" Foreground="#C62828" TextWrapping="Wrap" Margin="0,2,0,0"
+                                       Visibility="{Binding Error, Converter={StaticResource VisibleIfAny}}" />
+                            <TextBlock Text="{Binding Help}" Foreground="#777" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"
+                                       Visibility="{Binding Help, Converter={StaticResource VisibleIfAny}}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>
