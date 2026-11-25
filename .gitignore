@@ -4,6 +4,9 @@
 [Oo]ut/
 artifacts/
 publish/
+
+# Локальный скрипт публикации релиза (через gh), в репозиторий не входит
+publish.ps1
 *.dll
 *.exe
 *.pdb
