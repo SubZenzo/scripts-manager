@@ -1,12 +1,7 @@
-# Scripts Manager
+#  Scripts Manager
 
 Локальное WPF-приложение для запуска параметризованных скриптов (T-SQL, PL/pgSQL, PowerShell, Python) — замена
-Red Gate SQL Scripts Manager.
-
-- [Руководство пользователя](../README.md) — как пользоваться программой и писать для неё скрипты.
-- [Спецификация](docs/spec.md) — формат манифеста и пресетов, типы параметров, подключения, runners, поведение UI.
-  При изменении поведения обновляйте её вместе с кодом.
-- [План](docs/plan.md) — этапы первой версии.
+Red Gate SQL Scripts Mana
 
 ## Сборка, тесты, запуск
 
@@ -19,7 +14,7 @@ dotnet run --project ScriptsManager.App
 ```
 
 Тесты (xUnit) обходятся без серверов БД: git проверяется на временных репозиториях, PowerShell и Python — через
-установленные `powershell.exe` и `python`, T-SQL — разбор пакетов и подготовка параметров.
+установленные `powershell.exe` и `python`, T-SQL — разбор пакетов и подготовка параметров.
 
 Настройки — `%APPDATA%\ScriptsManager\settings.json`; папки со скриптами добавляются в окне «Настройки».
 
@@ -62,7 +57,7 @@ dotnet run --project ScriptsManager.App
   проверка в `ParameterValues` → передача в каждом runner (`RunValues`, `TSqlRunner`, `PlPgSqlRunner`,
   `ProcessRunner`) → поиск в тексте (`ScriptAnalyzer`) и объявление (`ScriptParamsWriter`, `TSqlDeclarations`) →
   поле формы (`FieldKind`, шаблон в `ParameterFormView.xaml`, `FieldTemplateSelector`) и выбор типа в
-  `ParameterEditViewModel` → тесты → таблицы типов в `docs/spec.md` и `../README.md`. Пример — тип `range`.
+  `ParameterEditViewModel` → тесты → таблицы типов в `docs/spec.md`. Пример — тип `range`.
 - **Язык скриптов**: `RunnerKind` и расширение (`Kinds.cs`, `ScriptLayout`), класс `IScriptRunner` в `Runs/`,
   выбор в `RunRegistry`, поиск параметров в `ScriptAnalyzer`.
 
