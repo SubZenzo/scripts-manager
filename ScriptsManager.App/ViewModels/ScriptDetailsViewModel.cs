@@ -10,12 +10,6 @@ using ScriptsManager.Core.Settings;
 
 namespace ScriptsManager.App.ViewModels;
 
-public sealed record ParameterRow(string Name, string Label, string Type, string Required, string Default, string Details, string? Help);
-
-public sealed record ConnectionRow(string Name, string Type, string Scope, string Default);
-
-public sealed record PresetRow(string Name, string Values);
-
 public sealed partial class ScriptDetailsViewModel : ObservableObject
 {
     private readonly ConnectionService _connections;
@@ -31,18 +25,17 @@ public sealed partial class ScriptDetailsViewModel : ObservableObject
         _issues = entry.Result.Issues;
         ScriptPath = entry.ScriptPath;
         ScriptText = File.Exists(entry.ScriptPath) ? ReadText(entry.ScriptPath) : null;
+        if (File.Exists(entry.DescriptionPath) && ReadText(entry.DescriptionPath) is { } details && details.Trim().Length > 0)
+            ExtendedDescription = details;
         // Свои файлы пишут только PowerShell и Python.
         if (entry.OutputPath is { } output && (entry.Manifest?.Runner ?? entry.UnmanagedRunner) is RunnerKind.PowerShell or RunnerKind.Python)
             Output = new OutputFilesViewModel(output);
         if (entry.IsUnmanaged)
         {
-            ManifestText = "";
             Summary = $"{entry.UnmanagedRunner?.Name()} · без манифеста";
             Syntax = entry.UnmanagedRunner?.Highlighting();
             return;
         }
-
-        ManifestText = ReadText(entry.ManifestPath);
 
         var m = entry.Manifest;
         if (m is null)
@@ -51,13 +44,9 @@ public sealed partial class ScriptDetailsViewModel : ObservableObject
         // Замечания к пресетам не мешают запуску: неподходящие значения просто не подставятся.
         var presets = PresetFile.Load(entry.PresetsPath);
         _issues = [.. _issues, .. presets.Issues, .. PresetFile.Validate(presets.Presets, m)];
-        UpdatePresets(presets.Presets);
 
         if (!entry.Result.HasErrors)
-        {
             Form = new ParameterFormViewModel(m, entry.ManifestPath, entry.PresetsPath, connections, state);
-            Form.PresetsSaved += UpdatePresets;
-        }
         // Вернулись к скрипту, который ещё выполняется или завершился без нас, — сразу показываем результат.
         if (CurrentRun is { } last && (last.IsRunning || !last.IsSeen))
         {
@@ -76,22 +65,9 @@ public sealed partial class ScriptDetailsViewModel : ObservableObject
         }.OfType<string>());
 
         Syntax = m.Runner.Highlighting();
-
-        Parameters = m.Parameters.Select(p => new ParameterRow(
-            p.Name, p.Label, YamlNames.ParameterTypes.ToYaml(p.Type), p.Required ? "да" : "нет",
-            string.Join(", ", p.Default), Details(p), p.Help)).ToList();
-
-        Connections = m.Connections.Select(c => new ConnectionRow(
-            c.Name, c.Type.Name(), c.Scope == ConnectionScope.Server ? "сервер" : "сервер и БД",
-            c.Default?.Name() ?? "")).ToList();
     }
 
     private readonly IReadOnlyList<ManifestIssue> _issues;
-
-    private void UpdatePresets(IReadOnlyList<ScriptPreset> presets) =>
-        Presets = presets.Select(p => new PresetRow(p.Name, string.Join("; ",
-            p.Values.Select(v => $"{v.Key} = {string.Join(", ", v.Value)}")
-                .Concat(p.Connections.Select(c => $"{c.Key} → {c.Value.Name()}"))))).ToList();
 
     public ScriptEntry Entry { get; }
 
@@ -113,6 +89,9 @@ public sealed partial class ScriptDetailsViewModel : ObservableObject
 
     public string Title => Entry.Title;
     public string? Description { get; }
+
+    /// <summary>Подробное описание (markdown) из <see cref="ScriptEntry.DescriptionPath"/>; null — его нет.</summary>
+    public string? ExtendedDescription { get; }
     public string? Summary { get; }
     public IReadOnlyList<ManifestIssue> Issues => _issues;
     public bool HasIssues => Issues.Count > 0;
@@ -123,13 +102,7 @@ public sealed partial class ScriptDetailsViewModel : ObservableObject
         ? "Чтобы запустить скрипт, нажмите «Изменить…» и сохраните: появится манифест с параметрами и подключениями"
         : "Исправьте ошибки в манифесте, чтобы запустить скрипт";
 
-    public IReadOnlyList<ParameterRow> Parameters { get; } = [];
-    public IReadOnlyList<ConnectionRow> Connections { get; } = [];
-    [ObservableProperty]
-    private IReadOnlyList<PresetRow> _presets = [];
-
     public string ManifestPath => Entry.ManifestPath;
-    public string ManifestText { get; }
     public string? ScriptPath { get; }
     public string? ScriptText { get; }
     public string? Syntax { get; }
@@ -274,24 +247,6 @@ public sealed partial class ScriptDetailsViewModel : ObservableObject
 
     [RelayCommand]
     private void ShowInFolder() => FileLauncher.ShowInExplorer(Entry.ScriptPath);
-
-    private static string Details(ScriptParameter p)
-    {
-        var parts = new List<string>();
-        if (p.Items.Count > 0)
-            parts.Add(string.Join(", ", p.Items.Select(i => i.Key == i.Value ? i.Value : $"{i.Value} ({i.Key})")));
-        if (p.Min is not null || p.Max is not null)
-            parts.Add($"{p.Min?.ToString() ?? "…"} – {p.Max?.ToString() ?? "…"}");
-        if (p.Multi)
-            parts.Add("несколько значений");
-        if (p.Editable)
-            parts.Add("можно своё значение");
-        if (p.Multiline && p.Type == ParameterType.String)
-            parts.Add("многострочный");
-        if (p.Filter is not null)
-            parts.Add(p.Filter);
-        return string.Join("; ", parts);
-    }
 
     private static string ReadText(string path)
     {

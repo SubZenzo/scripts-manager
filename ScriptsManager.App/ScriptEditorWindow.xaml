@@ -279,6 +279,17 @@
                         </DataGrid>
                     </DockPanel>
                 </TabItem>
+
+                <TabItem Header="Описание">
+                    <DockPanel Margin="4">
+                        <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="#888" Margin="0,0,0,4"
+                                   Text="Подробное описание в markdown — на вкладке «Описание» карточки скрипта. Хранится рядом с манифестом (.manifests/…/Имя.sql.md); пустое — файла нет" />
+                        <Border BorderBrush="#ABADB3" BorderThickness="1">
+                            <avalon:TextEditor x:Name="DescriptionEditor" FontFamily="Consolas" FontSize="13" WordWrap="True"
+                                               VerticalScrollBarVisibility="Auto" infra:CodeViewer.Syntax="MarkDown" />
+                        </Border>
+                    </DockPanel>
+                </TabItem>
             </TabControl>
         </Grid>
     </DockPanel>

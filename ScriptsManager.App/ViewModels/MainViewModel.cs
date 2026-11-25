@@ -399,7 +399,11 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var top = Path.GetRelativePath(root, path).Split(Path.DirectorySeparatorChar)[0];
             var side = top is ScriptLayout.ManifestsFolder or ScriptLayout.PresetsFolder && path.EndsWith(ScriptLayout.Extension, StringComparison.OrdinalIgnoreCase);
-            var script = side ? ScriptLayout.ScriptPath(root, path) : ScriptLayout.IsScript(path) ? path : null;
+            // Подробное описание публикуется вместе со скриптом, как манифест.
+            var description = top == ScriptLayout.ManifestsFolder && path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
+                && ScriptLayout.IsScript(Path.GetFileNameWithoutExtension(path));
+            var script = description ? ScriptLayout.ScriptPath(root, Path.ChangeExtension(path, ScriptLayout.Extension))
+                : side ? ScriptLayout.ScriptPath(root, path) : ScriptLayout.IsScript(path) ? path : null;
             if (script is null)
             {
                 others.Add(PublishItem.Files(Path.GetRelativePath(root, path), state, [path]));
@@ -651,8 +655,8 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var node in Descendants(root).Where(n => n.Script is not null))
             {
                 var entry = node.Script!;
-                // Сначала файл скрипта (новый скрипт — «+»), затем манифест и пресеты.
-                node.GitState = new[] { entry.ScriptPath, entry.ManifestPath, entry.PresetsPath }
+                // Сначала файл скрипта (новый скрипт — «+»), затем манифест, пресеты и описание.
+                node.GitState = new[] { entry.ScriptPath, entry.ManifestPath, entry.PresetsPath, entry.DescriptionPath }
                     .Select(p => status.Files.TryGetValue(p, out var s) ? s : (GitFileState?)null)
                     .FirstOrDefault(s => s is not null);
             }

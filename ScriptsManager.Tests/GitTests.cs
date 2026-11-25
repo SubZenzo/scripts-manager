@@ -208,6 +208,7 @@ public sealed class GitTests : IDisposable
         var target = Path.Combine(_dir.Path, "team");
         var manifest = _dir.Write(@"my\.manifests\Очереди\s.sql.yaml", "runner: tsql");
         _dir.Write(@"my\.presets\Очереди\s.sql.yaml", "- name: p\n");
+        _dir.Write(@"my\.manifests\Очереди\s.sql.md", "# s");
         var entry = new ScriptEntry(script, manifest, ScriptLayout.PresetsPath(source, script), ManifestLoader.Load(manifest, script));
 
         var (m, s, p) = ScriptCopier.Copy(entry, source, target, overwrite: false);
@@ -215,7 +216,12 @@ public sealed class GitTests : IDisposable
         Assert.Equal(Path.Combine(target, ".manifests", "Очереди", "s.sql.yaml"), m);
         Assert.Equal("select 1", File.ReadAllText(s));
         Assert.Equal("- name: p\n", File.ReadAllText(p));
+        Assert.Equal("# s", File.ReadAllText(Path.Combine(target, ".manifests", "Очереди", "s.sql.md")));
         Assert.Throws<IOException>(() => ScriptCopier.Copy(entry, source, target, overwrite: false));
+
+        // Описание убрали — при замене копии оно не остаётся.
+        File.Delete(entry.DescriptionPath);
         ScriptCopier.Copy(entry, source, target, overwrite: true);
+        Assert.False(File.Exists(Path.Combine(target, ".manifests", "Очереди", "s.sql.md")));
     }
 }

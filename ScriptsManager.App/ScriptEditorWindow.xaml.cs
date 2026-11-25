@@ -28,6 +28,8 @@ public partial class ScriptEditorWindow : Window
             _syncing = false;
         };
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        DescriptionEditor.Text = viewModel.ExtendedDescription;
+        DescriptionEditor.TextChanged += (_, _) => _viewModel.ExtendedDescription = DescriptionEditor.Text;
         DataObject.AddPastingHandler(Editor.TextArea, (_, _) =>
         {
             var wasEmpty = Editor.Text.Trim().Length == 0;

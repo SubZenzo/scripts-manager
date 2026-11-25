@@ -43,6 +43,7 @@ public sealed class CatalogAndSettingsTests : IDisposable
         _dir.Write("Папка/a.ps1");
         _dir.Write(".manifests/Папка/a.ps1.yaml", "runner: powershell");
         _dir.Write(".presets/Папка/a.ps1.yaml", "- name: p\n  values: {}");
+        _dir.Write(".manifests/Папка/a.ps1.md", "# a");
         _dir.Write("Папка/b.ps1");
         _dir.Write(".manifests/Папка/b.ps1.yaml", "runner: powershell");
         _dir.Write(".output/Папка/a/log.txt", "лог");
@@ -52,7 +53,8 @@ public sealed class CatalogAndSettingsTests : IDisposable
         var deleted = new List<string>();
         ScriptRemover.Delete(a, f => { deleted.Add(f); File.Delete(f); });
 
-        Assert.Equal([a.ScriptPath, a.ManifestPath, a.PresetsPath], deleted);
+        Assert.Equal(Path.Combine(_dir.Path, ".manifests", "Папка", "a.ps1.md"), a.DescriptionPath);
+        Assert.Equal([a.ScriptPath, a.ManifestPath, a.PresetsPath, a.DescriptionPath], deleted);
         // Опустевшая папка пресетов убрана, папка манифестов с другим скриптом и логи — остались.
         Assert.False(Directory.Exists(Path.Combine(_dir.Path, ".presets", "Папка")));
         Assert.True(Directory.Exists(Path.Combine(_dir.Path, ".presets")));

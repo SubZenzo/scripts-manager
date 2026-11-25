@@ -9,6 +9,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         DispatcherUnhandledException += OnUnhandledException;
+        Infrastructure.MarkdownView.RegisterLinks();
     }
 
     // Непредвиденная ошибка не должна закрывать приложение с введёнными параметрами.

@@ -52,24 +52,24 @@ public sealed class ConnectionTests : IDisposable
     public void RecentAndLastChoices()
     {
         var store = new ConnectionStore(Path.Combine(_dir.Path, "connections.json"));
-        var myServer = MsSql("myserver");
-        var myServer3 = MsSql("myserver3", AuthKind.Password, "reader");
+        var myserver = MsSql("myserver");
+        var myserver3 = MsSql("myserver3", AuthKind.Password, "reader");
         var pg = new SavedConnection(DbKind.Postgres, "myserver2", 5432, AuthKind.PgPass, "u");
 
-        store.Touch(myServer);
-        store.Touch(myServer3);
+        store.Touch(myserver);
+        store.Touch(myserver3);
         store.Touch(pg);
         store.Touch(MsSql("MYSERVER"));
 
         Assert.Equal(["MYSERVER", "myserver3"], store.GetRecent(DbKind.MsSql).Select(c => c.Server));
         Assert.Equal(pg, Assert.Single(store.GetRecent(DbKind.Postgres)));
 
-        store.SetLastChoice(Path.Combine(_dir.Path, "s.yaml"), "connection", new ConnectionChoice(myServer3, "mydatabase"));
+        store.SetLastChoice(Path.Combine(_dir.Path, "s.yaml"), "connection", new ConnectionChoice(myserver3, "mydatabase"));
         var last = store.GetLastChoice(Path.Combine(_dir.Path, "S.yaml"), "connection");
-        Assert.Equal(new ConnectionChoice(myServer3, "mydatabase"), last);
+        Assert.Equal(new ConnectionChoice(myserver3, "mydatabase"), last);
         Assert.Null(store.GetLastChoice(Path.Combine(_dir.Path, "s.yaml"), "other"));
 
-        store.Forget(myServer3);
+        store.Forget(myserver3);
         Assert.Equal(["MYSERVER"], store.GetRecent(DbKind.MsSql).Select(c => c.Server));
         Assert.Contains("\"MsSql\"", File.ReadAllText(store.FilePath));
     }

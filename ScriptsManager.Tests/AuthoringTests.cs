@@ -243,7 +243,7 @@ public sealed class AuthoringTests : IDisposable
             parser.add_argument("--ratio", default=0.5)
             parser.add_argument("--dry-run", action="store_true")
             parser.add_argument("--mode", choices=["a", "b"], default="a")
-            parser.add_argument("--stands", nargs="+", choices=("dev", "stage", "prod"))
+            parser.add_argument("--stands", nargs="+", choices=("dev", "stage"))
             parser.add_argument("file")
             conn = os.environ["DB_MAIN_CONNSTR"]
             """);
@@ -299,7 +299,7 @@ public sealed class AuthoringTests : IDisposable
             param(
                 [Parameter(Mandatory)][string]$folder,
                 [string]$query,
-                [ValidateSet('dev', 'stage', 'prod')][string[]]$stands = @('dev'),
+                [ValidateSet('dev', 'stage')][string[]]$stands = @('dev'),
                 [int]$count = 10,
                 [switch]$dryRun
             )
@@ -312,7 +312,7 @@ public sealed class AuthoringTests : IDisposable
         Assert.True(p["folder"].Required);
         Assert.Equal("Запрос к базе", p["query"].Help);
         Assert.Equal((ParameterType.List, true), (p["stands"].Type, p["stands"].Multi));
-        Assert.Equal(["dev", "stage", "prod"], p["stands"].Items.Select(i => i.Key));
+        Assert.Equal(["dev", "stage"], p["stands"].Items.Select(i => i.Key));
         Assert.Equal("10", p["count"].Default.Single());
         Assert.Equal(ParameterType.Bool, p["dryRun"].Type);
         Assert.Equal(["src"], analysis.Connections);
@@ -344,7 +344,7 @@ public sealed class AuthoringTests : IDisposable
                 new ScriptParameter("count", ParameterType.Int) { Min = 1, Max = 10, Default = ["5"] },
                 new ScriptParameter("from", ParameterType.DateTime) { Default = ["today-1d"] },
                 new ScriptParameter("mode", ParameterType.List) { Items = [new("k", "Значение"), new("x", "y")], Default = ["k"] },
-                new ScriptParameter("stands", ParameterType.List) { Multi = true, Editable = true, Items = [new("dev", "dev"), new("stage", "stage"), new("prod", "prod")], Default = ["dev"] },
+                new ScriptParameter("stands", ParameterType.List) { Multi = true, Editable = true, Items = [new("dev", "dev")], Default = ["dev"] },
                 new ScriptParameter("file", ParameterType.File) { Filter = "CSV|*.csv", Required = false },
             ],
         };
@@ -381,7 +381,7 @@ public sealed class AuthoringTests : IDisposable
                 Values = new Dictionary<string, IReadOnlyList<string>>
                 {
                     ["count"] = ["7"],
-                    ["stands"] = ["dev", "stage", "prod"],
+                    ["stands"] = ["dev", "stage"],
                     ["empty"] = [],
                     ["query"] = ["select top (10)\n    *\n\nfrom t -- комментарий"],
                     ["path"] = [@"D:\tmp\Новая папка (2)"],

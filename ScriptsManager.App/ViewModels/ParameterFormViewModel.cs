@@ -62,9 +62,6 @@ public sealed partial class ParameterFormViewModel : ObservableObject
     public bool HasConnections => Connections.Count > 0;
     public ObservableCollection<PresetItem> Presets { get; } = [];
 
-    /// <summary>Пресеты сохранены или удалены (новый список).</summary>
-    public event Action<IReadOnlyList<ScriptPreset>>? PresetsSaved;
-
     /// <summary>Подсказка в пустом поле пресета — чтобы было видно, что пресеты есть.</summary>
     public string PresetsHint => Presets.Count == 0 ? "пресетов нет" : $"выберите пресет ({Presets.Count})";
 
@@ -205,7 +202,6 @@ public sealed partial class ParameterFormViewModel : ObservableObject
         }
 
         LoadPresets();
-        PresetsSaved?.Invoke(Presets.Select(p => p.Preset).ToList());
         return true;
     }
 

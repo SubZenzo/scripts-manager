@@ -7,6 +7,13 @@
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Markdig.Wpf" Version="0.5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Значки T-SQL и PL/pgSQL в дереве — из SQL Server Management Studio 20 и pgAdmin 4. -->
+    <Resource Include="Assets\ssms.png" />
+    <Resource Include="Assets\pgadmin.png" />
   </ItemGroup>
 
   <PropertyGroup>

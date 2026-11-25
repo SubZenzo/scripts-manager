@@ -19,7 +19,7 @@ public sealed class TrayNotifier : IDisposable
             _icon = new NotifyIcon
             {
                 Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!),
-                Text = " Scripts Manager",
+                Text = "Scripts Manager",
             };
             _icon.BalloonTipClicked += (_, _) => _clicked?.Invoke();
             _icon.MouseClick += (_, _) => _clicked?.Invoke();

@@ -1,7 +1,7 @@
 namespace ScriptsManager.Core.Catalog;
 
 /// <summary>
-/// Копирование скрипта (файл скрипта, манифест и пресеты) в другую папку со скриптами с тем же относительным путём.
+/// Копирование скрипта (файл скрипта, манифест, пресеты и описание) в другую папку со скриптами с тем же относительным путём.
 /// </summary>
 public static class ScriptCopier
 {
@@ -23,6 +23,11 @@ public static class ScriptCopier
         Copy(entry.ManifestPath, target.Manifest);
         if (File.Exists(entry.PresetsPath))
             Copy(entry.PresetsPath, target.Presets);
+        var description = ScriptLayout.DescriptionPath(target.Manifest);
+        if (File.Exists(entry.DescriptionPath))
+            Copy(entry.DescriptionPath, description);
+        else if (File.Exists(description))
+            File.Delete(description);
         return target;
     }
 

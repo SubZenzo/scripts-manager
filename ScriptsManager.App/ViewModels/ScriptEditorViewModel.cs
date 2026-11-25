@@ -54,12 +54,16 @@ public sealed partial class ScriptEditorViewModel : ObservableObject
     }
 
     /// <summary>Манифест для файла скрипта, у которого его нет (<see cref="ScriptEntry.IsUnmanaged"/>).</summary>
-    public static ScriptEditorViewModel ForUnmanaged(ScriptEntry entry, AppSettings settings, IReadOnlyList<string> allTags) =>
-        new([], Path.GetDirectoryName(entry.ScriptPath), settings, allTags)
+    public static ScriptEditorViewModel ForUnmanaged(ScriptEntry entry, AppSettings settings, IReadOnlyList<string> allTags)
+    {
+        var editor = new ScriptEditorViewModel([], Path.GetDirectoryName(entry.ScriptPath), settings, allTags)
         {
             UnmanagedScript = entry.ScriptPath,
             UnmanagedManifestPath = entry.ManifestPath,
         };
+        editor.LoadExtended(entry.DescriptionPath);
+        return editor;
+    }
 
     /// <summary>Правка скрипта с разобранным манифестом.</summary>
     public ScriptEditorViewModel(ScriptEntry entry, AppSettings settings, IReadOnlyList<string> allTags)
@@ -71,6 +75,7 @@ public sealed partial class ScriptEditorViewModel : ObservableObject
         Roots = [];
         _title = m.Title;
         _description = m.Description ?? "";
+        LoadExtended(entry.DescriptionPath);
         foreach (var tag in m.Tags)
             TagList.Add(tag);
         _confirm = m.Confirm;
@@ -142,6 +147,26 @@ public sealed partial class ScriptEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private string _description = "";
+
+    /// <summary>Подробное описание (markdown), файл рядом с манифестом.</summary>
+    [ObservableProperty]
+    private string _extendedDescription = "";
+
+    private string? _originalExtended;
+
+    private void LoadExtended(string path)
+    {
+        if (!File.Exists(path))
+            return;
+        try
+        {
+            ExtendedDescription = _originalExtended = ScriptFiles.Read(path);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Message = $"Не удалось прочитать описание: {ex.Message}";
+        }
+    }
 
     public ObservableCollection<string> TagList { get; } = [];
 
@@ -571,6 +596,9 @@ public sealed partial class ScriptEditorViewModel : ObservableObject
         try
         {
             ScriptFiles.Save(manifest, manifestPath, _originalScript is null || text != _originalScript ? text : null);
+            var extendedPath = ScriptLayout.DescriptionPath(manifestPath);
+            if (ExtendedDescription != _originalExtended && (ExtendedDescription.Trim().Length > 0 || File.Exists(extendedPath)))
+                ScriptFiles.SaveDescription(extendedPath, ExtendedDescription);
 
             // Пресеты следуют за переименованием параметров и подключений.
             if (_entry is not null && File.Exists(_entry.PresetsPath))

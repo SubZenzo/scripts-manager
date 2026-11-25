@@ -81,7 +81,9 @@ public sealed partial class TreeNodeViewModel : ObservableObject
         _ => "",
     };
 
-    public string? Badge => (Script?.Manifest?.Runner ?? Script?.UnmanagedRunner)?.Badge();
+    /// <summary>Язык скрипта — значок в дереве; null — папка.</summary>
+    public RunnerKind? Runner => Script?.Manifest?.Runner ?? Script?.UnmanagedRunner;
+    public string? RunnerName => Runner?.Name();
 
     /// <summary>Скрипт без манифеста: показывается серым, манифест создаётся при правке.</summary>
     public bool IsUnmanaged => Script?.IsUnmanaged == true;

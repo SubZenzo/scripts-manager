@@ -15,12 +15,13 @@ public sealed class ScriptFolder(string name, string path)
     public string? Error { get; init; }
 }
 
-/// <summary>Скрипт папки: файл скрипта, его манифест и пресеты (см. <see cref="ScriptLayout"/>).</summary>
+/// <summary>Скрипт папки: файл скрипта, его манифест, пресеты и подробное описание (см. <see cref="ScriptLayout"/>).</summary>
 public sealed class ScriptEntry(string scriptPath, string manifestPath, string presetsPath, ManifestLoadResult result, string? outputPath = null)
 {
     public string ScriptPath { get; } = scriptPath;
     public string ManifestPath { get; } = manifestPath;
     public string PresetsPath { get; } = presetsPath;
+    public string DescriptionPath => ScriptLayout.DescriptionPath(ManifestPath);
 
     /// <summary>Папка вывода скрипта (OUTPUT_DIR); null — неизвестна.</summary>
     public string? OutputPath { get; } = outputPath;

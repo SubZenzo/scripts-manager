@@ -13,7 +13,7 @@ public sealed record PresetFileResult(IReadOnlyList<ScriptPreset> Presets, IRead
 /// Файл пресетов скрипта (<c>.presets/…/Имя.sql.yaml</c>) — YAML-список:
 /// <code>
 /// - name: Роуминг
-///   values: { queue: DelayedMessageQueue, stands: [dev, stage, prod] }
+///   values: { queue: DelayedMessageQueue, stands: [dev, stage] }
 ///   connections: { connection: { server: myserver, database: mydatabase } }
 /// </code>
 /// Значения — как в форме (строки, даты могут быть выражениями); пустой список — очистить поле.

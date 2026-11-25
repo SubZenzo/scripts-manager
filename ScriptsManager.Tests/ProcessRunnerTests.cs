@@ -40,7 +40,7 @@ public sealed class ProcessRunnerTests : IDisposable
     private static readonly Dictionary<string, object?> Values = new()
     {
         ["name"] = "it's ok", ["count"] = 10L, ["dryRun"] = true, ["day"] = new DateTime(2026, 1, 2),
-        ["stands"] = new[] { "dev", "stage", "prod" }, ["servers"] = new long[] { 3, 1, 2 }, ["empty"] = null,
+        ["stands"] = new[] { "dev", "stage" }, ["servers"] = new long[] { 3, 1, 2 }, ["empty"] = null,
     };
 
     private RunRequest Request(RunnerKind runner, string scriptFile, params (ConnectionSlot Slot, RunConnection Run)[] connections) => new(
@@ -66,7 +66,7 @@ public sealed class ProcessRunnerTests : IDisposable
     {
         var command = ProcessRunner.PowerShellCommand(Request(RunnerKind.PowerShell, "a'b.ps1"));
 
-        Assert.Contains($"& '{Path.Combine(_dir.Path, "a''b.ps1")}' -name 'it''s ok' -count '10' -dryRun:$true -day '2026-01-02' -stands @('dev', 'stage', 'prod') -servers @(3, 1, 2);", command);
+        Assert.Contains($"& '{Path.Combine(_dir.Path, "a''b.ps1")}' -name 'it''s ok' -count '10' -dryRun:$true -day '2026-01-02' -stands @('dev', 'stage') -servers @(3, 1, 2);", command);
         Assert.DoesNotContain("-empty", command);
     }
 
@@ -76,7 +76,7 @@ public sealed class ProcessRunnerTests : IDisposable
         var args = ProcessRunner.PythonArguments(Request(RunnerKind.Python, "s.py"));
 
         Assert.Equal(["-u", Path.Combine(_dir.Path, "s.py"), "--name", "it's ok", "--count", "10", "--dryRun",
-            "--day", "2026-01-02", "--stands", "dev", "stage", "prod", "--servers", "3", "1", "2"], args);
+            "--day", "2026-01-02", "--stands", "dev", "stage", "--servers", "3", "1", "2"], args);
     }
 
     [Fact]
@@ -92,8 +92,8 @@ public sealed class ProcessRunnerTests : IDisposable
         Assert.Equal("R", env["RESULT_DIR"]);
         Assert.False(env.ContainsKey("OUTPUT_DIR"));
         Assert.Equal(@"C:\out", ProcessRunner.Environment(Request(RunnerKind.Python, "s.py") with { OutputDir = @"C:\out" }, "R")["OUTPUT_DIR"]);
-        Assert.Equal("""{"name":"it's ok","count":"10","dryRun":"true","day":"2026-01-02","stands":["dev","stage","prod"],"servers":[3,1,2],"empty":null}""", env["SCRIPT_PARAMS"]);
-        Assert.Equal("Data Source=myserver;Application Name=\" Scripts Manager\";TrustServerCertificate=True;MultiSubnetFailover=True;Initial Catalog=mydatabase;Integrated Security=True",
+        Assert.Equal("""{"name":"it's ok","count":"10","dryRun":"true","day":"2026-01-02","stands":["dev","stage"],"servers":[3,1,2],"empty":null}""", env["SCRIPT_PARAMS"]);
+        Assert.Equal("Data Source=myserver;Application Name=\"Scripts Manager\";TrustServerCertificate=True;MultiSubnetFailover=True;Initial Catalog=mydatabase;Integrated Security=True",
             env["DB_SRC_CONNSTR"]);
         Assert.Equal(("myserver", "mydatabase", "true"), (env["DB_SRC_SERVER"], env["DB_SRC_DATABASE"], env["DB_SRC_INTEGRATED"]));
         Assert.Contains("Trusted_Connection=yes", env["DB_SRC_ODBC"]);
@@ -121,7 +121,7 @@ public sealed class ProcessRunnerTests : IDisposable
             .RunAsync(Request(RunnerKind.PowerShell, "s.ps1") with { OutputDir = outputDir }, output, CancellationToken.None));
 
         Assert.Contains("кодом 3", ex.Message);
-        Assert.Contains((LogKind.Message, "name=it's ok count=10 dryRun=True day=2026-01-02 stands=dev|stage|prod servers=3|1|2 empty=по умолчанию"), output.Lines);
+        Assert.Contains((LogKind.Message, "name=it's ok count=10 dryRun=True day=2026-01-02 stands=dev|stage servers=3|1|2 empty=по умолчанию"), output.Lines);
         Assert.Equal("лог", File.ReadAllText(Path.Combine(outputDir, "log.txt")).Trim());
         Assert.Contains(output.Lines, l => l.Kind == LogKind.Message && l.Text.StartsWith("params={\"name\":\"it's ok\""));
         Assert.Contains((LogKind.Error, "в stderr"), output.Lines);

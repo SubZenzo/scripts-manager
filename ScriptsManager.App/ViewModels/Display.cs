@@ -14,15 +14,6 @@ public static class Display
         _ => runner.ToString(),
     };
 
-    public static string Badge(this RunnerKind runner) => runner switch
-    {
-        RunnerKind.TSql => "SQL",
-        RunnerKind.PlPgSql => "PG",
-        RunnerKind.PowerShell => "PS",
-        RunnerKind.Python => "PY",
-        _ => "",
-    };
-
     /// <summary>Имя встроенной подсветки AvalonEdit.</summary>
     public static string Highlighting(this RunnerKind runner) => runner switch
     {

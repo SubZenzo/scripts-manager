@@ -1,11 +1,11 @@
 namespace ScriptsManager.Core.Catalog;
 
-/// <summary>Удаление скрипта: файл скрипта, манифест и пресеты. Папка вывода (.output) с логами остаётся.</summary>
+/// <summary>Удаление скрипта: файл скрипта, манифест, пресеты и описание. Папка вывода (.output) с логами остаётся.</summary>
 public static class ScriptRemover
 {
     /// <summary>Файлы скрипта, которые есть на диске.</summary>
     public static IReadOnlyList<string> Files(ScriptEntry entry) =>
-        new[] { entry.ScriptPath, entry.ManifestPath, entry.PresetsPath }.Where(File.Exists).ToList();
+        new[] { entry.ScriptPath, entry.ManifestPath, entry.PresetsPath, entry.DescriptionPath }.Where(File.Exists).ToList();
 
     /// <summary>
     /// Удаляет файлы скрипта (<paramref name="deleteFile"/> — например, в корзину) и опустевшие папки манифеста и пресетов

@@ -55,6 +55,20 @@ public static class ScriptFiles
         File.WriteAllText(manifestPath, ManifestWriter.Write(manifest), new UTF8Encoding(false));
     }
 
+    /// <summary>Записывает подробное описание (UTF-8 без BOM); пустое — удаляет файл.</summary>
+    public static void SaveDescription(string path, string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+            return;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+        File.WriteAllText(path, text, new UTF8Encoding(false));
+    }
+
     private static bool HasBom(string path)
     {
         Span<byte> head = stackalloc byte[3];

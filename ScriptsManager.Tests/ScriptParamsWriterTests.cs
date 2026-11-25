@@ -12,7 +12,7 @@ public sealed class ScriptParamsWriterTests
         new("count", ParameterType.Int) { Default = ["5"] },
         new("dryRun", ParameterType.Bool),
         new("servers", ParameterType.Range) { Default = ["19..21, 7"] },
-        new("stands", ParameterType.List) { Multi = true, Items = [new("dev", "dev"), new("stage", "stage"), new("prod", "prod")], Default = ["dev", "stage", "prod"] },
+        new("stands", ParameterType.List) { Multi = true, Items = [new("a", "a"), new("b", "b")], Default = ["a", "b"] },
         new("from", ParameterType.Date) { Default = ["today-7"] },
     ];
 
@@ -106,7 +106,7 @@ public sealed class ScriptParamsWriterTests
             process.WaitForExit();
 
             Assert.True(process.ExitCode == 0, error);
-            Assert.Equal("t|2|True|[3, 1]|['dev', 'stage', 'prod']", output);
+            Assert.Equal("t|2|True|[3, 1]|['a', 'b']", output);
         }
         finally
         {

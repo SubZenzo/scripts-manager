@@ -7,7 +7,7 @@ namespace ScriptsManager.App.Infrastructure;
 
 public static class Dialogs
 {
-    private const string Caption = " Scripts Manager";
+    private const string Caption = "Scripts Manager";
 
     private static Window? Owner => Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
         ?? Application.Current?.MainWindow;

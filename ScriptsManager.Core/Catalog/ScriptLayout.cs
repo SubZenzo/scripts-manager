@@ -4,7 +4,8 @@ namespace ScriptsManager.Core.Catalog;
 
 /// <summary>
 /// Раскладка папки со скриптами: скрипты — в папках как есть, манифест и пресеты скрипта
-/// <c>Папка/Имя.sql</c> — в <c>.manifests/Папка/Имя.sql.yaml</c> и <c>.presets/Папка/Имя.sql.yaml</c>.
+/// <c>Папка/Имя.sql</c> — в <c>.manifests/Папка/Имя.sql.yaml</c> и <c>.presets/Папка/Имя.sql.yaml</c>,
+/// подробное описание (markdown) — рядом с манифестом, в <c>.manifests/Папка/Имя.sql.md</c>.
 /// Расширение скрипта в имени, чтобы <c>Имя.ps1</c> и <c>Имя.py</c> не делили манифест.
 /// </summary>
 public static class ScriptLayout
@@ -24,6 +25,9 @@ public static class ScriptLayout
     public static string ManifestPath(string root, string scriptPath) => SidePath(root, ManifestsFolder, scriptPath);
 
     public static string PresetsPath(string root, string scriptPath) => SidePath(root, PresetsFolder, scriptPath);
+
+    /// <summary>Подробное описание: <c>.manifests/Папка/Имя.sql.yaml</c> → <c>.manifests/Папка/Имя.sql.md</c>.</summary>
+    public static string DescriptionPath(string manifestPath) => Path.ChangeExtension(manifestPath, ".md");
 
     /// <summary>Папка вывода скрипта: <c>Папка/Имя.ps1</c> → <c>.output/Папка/Имя</c>.</summary>
     public static string OutputPath(string root, string scriptPath)

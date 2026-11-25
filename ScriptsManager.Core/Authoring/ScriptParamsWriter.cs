@@ -150,7 +150,7 @@ public static partial class ScriptParamsWriter
     private static string PythonRegion(IReadOnlyList<ScriptParameter> parameters, string nl)
     {
         var sb = new StringBuilder();
-        sb.Append(PythonRegionStart).Append(": параметры передаёт  Scripts Manager (--имя значение)").Append(nl);
+        sb.Append(PythonRegionStart).Append(": параметры передаёт Scripts Manager (--имя значение)").Append(nl);
         sb.Append("import argparse").Append(nl).Append(nl);
         sb.Append("_parser = argparse.ArgumentParser()").Append(nl);
         foreach (var p in parameters)

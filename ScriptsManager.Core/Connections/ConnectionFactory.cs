@@ -8,7 +8,7 @@ namespace ScriptsManager.Core.Connections;
 /// <summary>Строки подключения и служебные запросы к серверу.</summary>
 public sealed class ConnectionFactory
 {
-    public const string ApplicationName = " Scripts Manager";
+    public const string ApplicationName = "Scripts Manager";
 
     public string BuildConnectionString(SavedConnection connection, string? database, string? password)
     {
