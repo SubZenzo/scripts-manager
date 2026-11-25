@@ -1,4 +1,4 @@
-# Doclines Scripts Manager — руководство пользователя
+# Scripts Manager — руководство пользователя
 
 Программа для запуска скриптов с формой параметров: T-SQL, PL/pgSQL, PowerShell и Python.
 Замена Red Gate SQL Scripts Manager: даты с календарём, необязательные параметры, подпапки, несколько серверов и баз,
